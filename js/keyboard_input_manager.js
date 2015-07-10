@@ -1,7 +1,13 @@
+// AI mode
+//var AImode;
+
 function KeyboardInputManager() {
   this.events = {};
 
   this.listen();
+
+  // AI
+  this.AImode = false;
 }
 
 KeyboardInputManager.prototype.on = function (event, callback) {
@@ -37,13 +43,12 @@ KeyboardInputManager.prototype.listen = function () {
     83: 2, // S
     65: 3  // A
   };
-
-  document.addEventListener("keydown", function (event) {
-    var modifiers = event.altKey || event.ctrlKey || event.metaKey ||
-                    event.shiftKey;
+  
+  document.addEventListener("keydown", function(event) {
+    var modifiers = event.altKey || event.ctrlKey || event.metaKey || event.shiftKey;
     var mapped    = map[event.which];
 
-    if (!modifiers) {
+    if (!modifiers && !self.AImode) {
       if (mapped !== undefined) {
         event.preventDefault();
         self.emit("move", mapped);
@@ -60,6 +65,10 @@ KeyboardInputManager.prototype.listen = function () {
   var keepPlaying = document.querySelector(".keep-playing-button");
   keepPlaying.addEventListener("click", this.keepPlaying.bind(this));
   keepPlaying.addEventListener("touchend", this.keepPlaying.bind(this));
+
+  var btnToggleAI = document.querySelector(".toggle-AI-button");
+  btnToggleAI.addEventListener("click", this.toggleAI.bind(this));
+  btnToggleAI.addEventListener("touchend", this.toggleAI.bind(this));
 
   // Listen to swipe events
   var touchStartClientX, touchStartClientY;
@@ -101,4 +110,16 @@ KeyboardInputManager.prototype.restart = function (event) {
 KeyboardInputManager.prototype.keepPlaying = function (event) {
   event.preventDefault();
   this.emit("keepPlaying");
+};
+
+// Toggle AI for playing
+KeyboardInputManager.prototype.toggleAI = function(event) {
+  this.AImode = !this.AImode;
+  document.querySelector(".toggle-AI-button").innerHTML = "AI: " + (this.AImode ? "on" : "off");
+
+  // run AI
+  if(this.AImode) {
+    event.preventDefault();
+    this.emit("run");
+  }
 };

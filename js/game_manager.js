@@ -10,6 +10,11 @@ function GameManager(size, InputManager, Actuator, ScoreManager) {
   this.inputManager.on("restart", this.restart.bind(this));
   this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
 
+  // AI
+  this.AI = new Fib2584Ai();
+  this.AI.initialize();
+  this.inputManager.on("run", this.run.bind(this));
+
   this.setup();
 }
 
@@ -23,6 +28,24 @@ GameManager.prototype.restart = function () {
 GameManager.prototype.keepPlaying = function () {
   this.keepPlaying = true;
   this.actuator.continue();
+};
+
+// AI playing
+GameManager.prototype.run = function() {
+
+  if(this.inputManager.AImode && !this.over)
+  {
+    // generate move from AI and play
+    var bestMove = this.AI.generateMove(this.grid);
+    this.move(bestMove);
+
+    // waiting for the next calling
+    var self = this;
+    var timeout = 100; // for animation delay
+    setTimeout(function() {
+      self.run();
+    }, timeout);
+  }
 };
 
 GameManager.prototype.isGameTerminated = function () {
@@ -41,6 +64,10 @@ GameManager.prototype.setup = function () {
   this.over        = false;
   this.won         = false;
   this.keepPlaying = false;
+
+  // AI
+  this.inputManager.AImode = false;
+  document.querySelector(".toggle-AI-button").innerHTML = "AI: " + (this.AImode ? "on" : "off");
 
   // Add the initial tiles
   this.addStartTiles();
